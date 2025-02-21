@@ -149,10 +149,28 @@ function makeWord(lettersObject) {
  *    sellTickets([25, 25, 50]) => true
  *    sellTickets([25, 100]) => false (The seller does not have enough money to give change.)
  */
-function sellTickets(/* queue */) {
-  throw new Error('Not implemented');
+function sellTickets(queue) {
+  let result = true;
+  queue.reduce((acc, cur) => {
+    if (cur === 25) {
+      return acc + 25;
+    }
+    if (cur === 50) {
+      if (acc < 25) {
+        result = false;
+      }
+      return acc + 25;
+    }
+    if (cur === 100) {
+      if (acc < 75) {
+        result = false;
+      }
+      return acc + 25;
+    }
+    return acc;
+  }, 0);
+  return result;
 }
-
 /**
  * Returns the rectangle object with width and height parameters and getArea() method
  *
