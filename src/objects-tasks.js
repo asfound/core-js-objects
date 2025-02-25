@@ -359,33 +359,170 @@ function group(array, keySelector, valueSelector) {
  *  For more examples see unit tests.
  */
 
+const POSITION = new Map([
+  ['ELEMENT', 1],
+  ['ID', 2],
+  ['CLASS', 3],
+  ['ATTRIBUTE', 4],
+  ['PSEUDO_CLASS', 5],
+  ['PSEUDO_ELEMENT', 6],
+]);
+
+class Builder {
+  constructor(value, position) {
+    this.value = value;
+    this.position = position;
+
+    this.hasElement = false;
+    this.hasID = false;
+    this.hasPseudoElement = false;
+  }
+
+  element(value) {
+    const position = POSITION.get('ELEMENT');
+
+    if (this.position > position) {
+      Builder.throwOrderError();
+    }
+
+    if (this.hasElement) {
+      Builder.throwOccurrenceError();
+    }
+
+    this.hasElement = true;
+    this.value += value;
+    this.position = position;
+
+    return this;
+  }
+
+  id(value) {
+    const position = POSITION.get('ID');
+
+    if (this.position > position) {
+      Builder.throwOrderError();
+    }
+
+    if (this.hasID) {
+      Builder.throwOccurrenceError();
+    }
+
+    this.hasID = true;
+    this.value += `#${value}`;
+    this.position = position;
+
+    return this;
+  }
+
+  class(value) {
+    const position = POSITION.get('CLASS');
+
+    if (this.position > position) {
+      Builder.throwOrderError();
+    }
+
+    this.value += `.${value}`;
+    this.position = position;
+
+    return this;
+  }
+
+  attr(value) {
+    const position = POSITION.get('ATTRIBUTE');
+
+    if (this.position > position) {
+      Builder.throwOrderError();
+    }
+
+    this.value += `[${value}]`;
+    this.position = position;
+
+    return this;
+  }
+
+  pseudoClass(value) {
+    const position = POSITION.get('PSEUDO_CLASS');
+
+    if (this.position > position) {
+      Builder.throwOrderError();
+    }
+
+    this.value += `:${value}`;
+    this.position = position;
+
+    return this;
+  }
+
+  pseudoElement(value) {
+    const position = POSITION.get('PSEUDO_ELEMENT');
+
+    if (this.position > position) {
+      Builder.throwOrderError();
+    }
+
+    if (this.hasPseudoElement) {
+      Builder.throwOccurrenceError();
+    }
+
+    this.hasPseudoElement = true;
+    this.value += `::${value}`;
+    this.position = position;
+
+    return this;
+  }
+
+  stringify() {
+    return this.value;
+  }
+
+  static throwOrderError() {
+    throw new Error(
+      'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+    );
+  }
+
+  static throwOccurrenceError() {
+    throw new Error(
+      'Element, id and pseudo-element should not occur more then one time inside the selector'
+    );
+  }
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    const builder = new Builder('', POSITION.get('ELEMENT'));
+    return builder.element(value);
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    const builder = new Builder('', POSITION.get('ID'));
+    return builder.id(value);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    const builder = new Builder('', POSITION.get('CLASS'));
+    return builder.class(value);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    const builder = new Builder('', POSITION.get('ATTRIBUTE'));
+    return builder.attr(value);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    const builder = new Builder('', POSITION.get('PSEUDO_CLASS'));
+    return builder.pseudoClass(value);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    const builder = new Builder('', POSITION.get('PSEUDO_ELEMENT'));
+    return builder.pseudoElement(value);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const combination = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    const builder = new Builder(combination, POSITION.get('ELEMENT'));
+    return builder;
   },
 };
 
