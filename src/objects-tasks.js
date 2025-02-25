@@ -359,17 +359,17 @@ function group(array, keySelector, valueSelector) {
  *  For more examples see unit tests.
  */
 
-const POSITION = new Map([
-  ['ELEMENT', 1],
-  ['ID', 2],
-  ['CLASS', 3],
-  ['ATTRIBUTE', 4],
-  ['PSEUDO_CLASS', 5],
-  ['PSEUDO_ELEMENT', 6],
-]);
+const POSITION = {
+  ELEMENT: 1,
+  ID: 2,
+  CLASS: 3,
+  ATTRIBUTE: 4,
+  PSEUDO_CLASS: 5,
+  PSEUDO_ELEMENT: 6,
+};
 
 class Builder {
-  constructor(value, position) {
+  constructor(value, position = 1) {
     this.value = value;
     this.position = position;
 
@@ -379,7 +379,7 @@ class Builder {
   }
 
   element(value) {
-    const position = POSITION.get('ELEMENT');
+    const position = POSITION.ELEMENT;
 
     if (this.position > position) {
       Builder.throwOrderError();
@@ -397,7 +397,7 @@ class Builder {
   }
 
   id(value) {
-    const position = POSITION.get('ID');
+    const position = POSITION.ID;
 
     if (this.position > position) {
       Builder.throwOrderError();
@@ -415,7 +415,7 @@ class Builder {
   }
 
   class(value) {
-    const position = POSITION.get('CLASS');
+    const position = POSITION.CLASS;
 
     if (this.position > position) {
       Builder.throwOrderError();
@@ -428,7 +428,7 @@ class Builder {
   }
 
   attr(value) {
-    const position = POSITION.get('ATTRIBUTE');
+    const position = POSITION.ATTRIBUTE;
 
     if (this.position > position) {
       Builder.throwOrderError();
@@ -441,7 +441,7 @@ class Builder {
   }
 
   pseudoClass(value) {
-    const position = POSITION.get('PSEUDO_CLASS');
+    const position = POSITION.PSEUDO_CLASS;
 
     if (this.position > position) {
       Builder.throwOrderError();
@@ -454,7 +454,7 @@ class Builder {
   }
 
   pseudoElement(value) {
-    const position = POSITION.get('PSEUDO_ELEMENT');
+    const position = POSITION.PSEUDO_ELEMENT;
 
     if (this.position > position) {
       Builder.throwOrderError();
@@ -471,10 +471,6 @@ class Builder {
     return this;
   }
 
-  stringify() {
-    return this.value;
-  }
-
   static throwOrderError() {
     throw new Error(
       'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
@@ -486,43 +482,40 @@ class Builder {
       'Element, id and pseudo-element should not occur more then one time inside the selector'
     );
   }
+
+  stringify() {
+    return this.value;
+  }
 }
 
 const cssSelectorBuilder = {
   element(value) {
-    const builder = new Builder('', POSITION.get('ELEMENT'));
-    return builder.element(value);
+    return new Builder('', POSITION.ELEMENT).element(value);
   },
 
   id(value) {
-    const builder = new Builder('', POSITION.get('ID'));
-    return builder.id(value);
+    return new Builder('', POSITION.ID).id(value);
   },
 
   class(value) {
-    const builder = new Builder('', POSITION.get('CLASS'));
-    return builder.class(value);
+    return new Builder('', POSITION.CLASS).class(value);
   },
 
   attr(value) {
-    const builder = new Builder('', POSITION.get('ATTRIBUTE'));
-    return builder.attr(value);
+    return new Builder('', POSITION.ATTRIBUTE).attr(value);
   },
 
   pseudoClass(value) {
-    const builder = new Builder('', POSITION.get('PSEUDO_CLASS'));
-    return builder.pseudoClass(value);
+    return new Builder('', POSITION.PSEUDO_CLASS).pseudoClass(value);
   },
 
   pseudoElement(value) {
-    const builder = new Builder('', POSITION.get('PSEUDO_ELEMENT'));
-    return builder.pseudoElement(value);
+    return new Builder('', POSITION.PSEUDO_ELEMENT).pseudoElement(value);
   },
 
   combine(selector1, combinator, selector2) {
     const combination = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
-    const builder = new Builder(combination, POSITION.get('ELEMENT'));
-    return builder;
+    return new Builder(combination);
   },
 };
 
